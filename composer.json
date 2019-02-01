@@ -38,6 +38,8 @@
   },
   "require": {
     "php": "^7.1",
+    "ext-json": "*",
+    "electrolinux/phpquery": "^0.9.6",
     "rollun-com/rollun-callback": "^5.0",
     "rollun-com/rollun-datastore": "^6",
     "rollun-com/rollun-logger": "^4.2",
