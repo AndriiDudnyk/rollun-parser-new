@@ -15,7 +15,11 @@ return [
     CallbackAbstractFactoryAbstract::KEY => [
         'min_multiplexer' => [
             MultiplexerAbstractFactory::KEY_CLASS => Multiplexer::class,
-            MultiplexerAbstractFactory::KEY_CALLBACKS_SERVICES => [],
+            MultiplexerAbstractFactory::KEY_CALLBACKS_SERVICES => [
+                'searchLoaderWorkerManager',
+                'searchParserWorkerManager',
+                'searchTask',
+            ],
         ],
     ],
     InterruptAbstractFactoryAbstract::KEY => [

@@ -6,6 +6,7 @@
 
 namespace Ebay\Parser;
 
+use Parser\AbstractParser;
 use phpQuery as PhpQuery;
 
 final class Product extends AbstractParser
@@ -86,5 +87,10 @@ final class Product extends AbstractParser
         $document = PhpQuery::newDocument($data);
 
         return boolval($document->find('#mbgLink')->attr('href'));
+    }
+
+    protected function saveResult($records)
+    {
+        // TODO: Implement saveResult() method.
     }
 }

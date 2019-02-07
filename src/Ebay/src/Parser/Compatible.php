@@ -6,6 +6,8 @@
 
 namespace Ebay\Parser;
 
+use Parser\AbstractParser;
+
 final class Compatible extends AbstractParser
 {
     public const PARSER_NAME = 'ebayCompatible';
@@ -37,5 +39,10 @@ final class Compatible extends AbstractParser
     public function canParse(string $data): bool
     {
         return boolval(json_decode($data, true) ?? null);
+    }
+
+    protected function saveResult($records)
+    {
+        // TODO: Implement saveResult() method.
     }
 }

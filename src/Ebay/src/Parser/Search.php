@@ -6,42 +6,35 @@
 
 namespace Ebay\Parser;
 
+use Parser\AbstractParser;
 use phpQuery as PhpQuery;
 
-final class EbayMotors extends AbstractParser
+final class Search extends AbstractParser
 {
     public const PARSER_NAME = self::class;
 
+    /**
+     * @param string $data
+     * @return array
+     */
     public function parse(string $data): array
     {
         $document = PhpQuery::newDocument($data);
-        $itemCards = $document->find('#ListViewInner > li');
+        $itemCards = $document->find('.s-item__wrapper');
         $products = [];
 
         foreach ($itemCards as $key => $itemCard) {
             $pq = pq($itemCard);
 
-            if ($pq->find('.kand-expansion')->count()) {
-                continue;
-            }
-
-            $products[$key]['uri'] = $pq->find('.lvtitle a')->attr('href');
+            $products[$key]['uri'] = $pq->find('.s-item__link')->attr('href');
             $urlComponents = parse_url($products[$key]['uri']);
             $path = $urlComponents['path'];
             $parts = explode('/', $path);
 
             $products[$key]['item_id'] = end($parts);
-            $products[$key]['imgs'] = $pq->find('.full-width a .img')->attr('src');
-
-            if ($pq->find('.prRange')->count()) {
-                $priceRange = $pq->find('.prRange')->text();
-                [$from, ,$to] = explode(' ', $priceRange);
-                $products[$key]['price'] = trim($from) . '-' . trim($to);
-            } else {
-                $products[$key]['price'] = trim($pq->find('.lvprice > span')->text());
-            }
-
-            $products[$key]['shipping']['cost'] = trim($pq->find('.lvshipping .fee')->text());
+            $products[$key]['imgs'] = $pq->find('.s-item__image-img')->attr('src');
+            $products[$key]['price'] = $pq->find('span.s-item__price')->text();
+            $products[$key]['shipping']['cost'] = $pq->find('.s-item__shipping')->text();
 
             // Filter trash
             $products[$key]['shipping']['cost'] = str_replace(
@@ -52,15 +45,14 @@ final class EbayMotors extends AbstractParser
 
             $products[$key]['shipping'] = implode(' ', $products[$key]['shipping']);
 
-            $sellerInfo = trim($pq->find('.lvdetails li')->eq(1)->text());
-            preg_match('/Seller:\s+([\w\W]+)\(.+\)/', $sellerInfo, $matches);
-            $products[$key]['seller'] = $matches[1] ?? '';
+            $sellerInfo = $pq->find('.s-item__seller-info-text')->text();
+            [, $sellerId, , ,] = explode(' ', $sellerInfo);
+            $products[$key]['seller'] = $sellerId;
 
-            $hotnessText = trim($pq->find('.watch a')->text());
-
+            $hotnessText = $pq->find('.s-item__hotness>.NEGATIVE')->text();
             $products[$key]['date'] = $pq->find('.timeleft .tme span')->text();
 
-            if (stristr($hotnessText, 'Watch')) {
+            if (stristr($hotnessText, 'Watching')) {
                 $products[$key]['watch'] = $hotnessText;
             }
 
@@ -70,7 +62,7 @@ final class EbayMotors extends AbstractParser
         }
 
         $result['products'] = $products;
-        $result['nextPage'] = $document->find('#Pagination .pages .curr + a')->attr('href');
+        $result['nextPage'] = $document->find('.s-pagination .x-pagination__li--selected + li a')->attr('href');
 
         return $result;
     }
@@ -78,6 +70,12 @@ final class EbayMotors extends AbstractParser
     public function canParse(string $data): bool
     {
         $document = PhpQuery::newDocument($data);
-        return boolval($document->find('#ListViewInner > li')->count());
+
+        return boolval($document->find('.s-item__wrapper')->count());
+    }
+
+    protected function saveResult($records)
+    {
+        // TODO: Implement saveResult() method.
     }
 }
