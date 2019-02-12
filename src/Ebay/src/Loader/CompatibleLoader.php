@@ -7,12 +7,14 @@
 namespace Ebay\Loader;
 
 use Psr\Http\Message\ResponseInterface;
-use rollun\parser\AbstractLoader;
+use Psr\Http\Message\ServerRequestInterface;
+use rollun\callback\Callback\Interrupter\QueueFiller;
+use rollun\callback\Queues\Message;
 
-class BaseLoader extends AbstractLoader
+class CompatibleLoader extends BaseLoader
 {
     const OPTIMAL_TIME_INTERVAL = 3;
-    const FILE_EXTENSION = '.html';
+    const FILE_EXTENSION = '.json';
 
     /**
      * Create rating about proxy from 1 to 10
@@ -38,16 +40,14 @@ class BaseLoader extends AbstractLoader
         }
     }
 
-    /**
-     * Create filepath 'tmp-directory-in-your-system/documents/some-hash' directory of OS
-     *
-     * Example for linux:
-     * '/tmp/documents/queue-name/ec28346356cd2e430f58d523bcf937a05c5954d731c83'
-     *
-     * @return string
-     */
-    protected function createFilename()
+    protected function saveDocument(ResponseInterface $response, ServerRequestInterface $request)
     {
+        $uri = $request->getUri()->__toString();
+
+        if (preg_match('/(\d+)$/', $uri, $matches) === false || !$matches[1]) {
+            throw new \InvalidArgumentException("Can't parse item id from compatible uri");
+        }
+
         $storageDir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . self::STORAGE_DIR;
 
         if (!file_exists($storageDir)) {
@@ -60,8 +60,17 @@ class BaseLoader extends AbstractLoader
             mkdir($dirName);
         }
 
-        $filename = microtime(true);
+        $itemId = $matches[1];
+        $filename = $itemId . '-' . microtime(true);
+        $filename =  $dirName . DIRECTORY_SEPARATOR . $filename . self::FILE_EXTENSION;
 
-        return $dirName . DIRECTORY_SEPARATOR . $filename . self::FILE_EXTENSION;
+        try {
+            $data = $response->getBody()->getContents();
+            file_put_contents($filename, $data);
+            $message = Message::createInstance(QueueFiller::serializeMessage(['filepath' => $filename]));
+            $this->documentQueue->addMessage($message);
+        } catch (\Throwable $t) {
+            throw new \RuntimeException("Error when trying save document", 0, $t);
+        }
     }
 }

@@ -6,12 +6,43 @@
 
 namespace Ebay\Parser;
 
-use Parser\AbstractParser;
+use Ebay\ConfigProvider;
+use GuzzleHttp\Psr7\ServerRequest;
 use phpQuery as PhpQuery;
+use Psr\Log\LoggerInterface;
+use rollun\callback\Callback\Interrupter\QueueFiller;
+use rollun\callback\Queues\Message;
+use rollun\callback\Queues\QueueInterface;
+use rollun\datastore\DataStore\Interfaces\DataStoresInterface;
+use rollun\dic\InsideConstruct;
+use rollun\parser\AbstractParser;
 
 final class Product extends AbstractParser
 {
     public const PARSER_NAME = 'ebayProduct';
+
+    const PID_COMPATIBLE_URI = 'https://frame.ebay.com/ebaymotors/ws/eBayISAPI.dll'
+    . '?GetFitmentData&req=1&cid=177773&ct=100&page=1&pid=';
+
+    const ITEM_COMPATIBLE_URI = 'https://frame.ebay.com/ebaymotors/ws/eBayISAPI.dll'
+    . '?GetFitmentData&req=2&ct=1000&page=1&item=';
+
+    /**
+     * @var QueueInterface
+     */
+    protected $compatibleTaskQueue;
+
+    public function __construct(
+        DataStoresInterface $parseResultDataStore = null,
+        ?LoggerInterface $logger = null,
+        QueueInterface $compatibleTaskQueue = null
+    ) {
+        parent::__construct($parseResultDataStore, null);
+        InsideConstruct::setConstructParams([
+            'compatibleTaskQueue' => ConfigProvider::__NAMESPACE__ . 'compatibleTaskQueue',
+            'logger' => LoggerInterface::class,
+        ]);
+    }
 
     /**
      * @param string $data
@@ -25,6 +56,13 @@ final class Product extends AbstractParser
         $parts = parse_url($sellerUrl);
         parse_str($parts['query'], $sellerId);
 
+        $href = $document->find('link[rel="canonical"]')->attr('href');
+
+        if (preg_match('/(\d+)$/', $href, $matches) === false || !$matches[1]) {
+            throw new \InvalidArgumentException("Can't parse item id from ebay product document");
+        }
+
+        $product['item_id'] = $matches[1];
         $product['title'] = $document->find('.it-ttl')->text();
 
         if ($document->find('#vi-cdown_timeLeft')->count()) {
@@ -89,8 +127,43 @@ final class Product extends AbstractParser
         return boolval($document->find('#mbgLink')->attr('href'));
     }
 
-    protected function saveResult($records)
+    protected function saveResult($product)
     {
-        // TODO: Implement saveResult() method.
+        $checkedProduct = [
+            'id' => $product['item_id'],
+            'title' => $product['title'],
+            'price' => $product['price'],
+            'seller' => $product['seller'],
+            'shipping' => json_encode($product['shipping']),
+            'category' => $product['category'],
+            'ebay_id' => $product['ebay_id'],
+            'imgs' => json_encode($product['imgs']),
+            'specs' => json_encode($product['specs']),
+        ];
+
+        $this->parseResultDataStore->update($checkedProduct);
+        $this->addCompatibleParsingTask($checkedProduct);
+    }
+
+    protected function addCompatibleParsingTask($product)
+    {
+        if ($product['ebay_id']) {
+            $compatibleUri = self::PID_COMPATIBLE_URI . $product['ebay_id'];
+        } else {
+            $compatibleUri = self::ITEM_COMPATIBLE_URI . $product['id'];
+        }
+
+        $request = new ServerRequest('GET', $compatibleUri);
+        $serializedData = QueueFiller::serializeMessage($request);
+        $message = new Message($serializedData);
+        $this->compatibleTaskQueue->addMessage($message);
+    }
+
+    public function __wakeup()
+    {
+        InsideConstruct::initWakeup([
+            'compatibleTaskQueue' => ConfigProvider::__NAMESPACE__ . 'compatibleTaskQueue',
+            'logger' => LoggerInterface::class,
+        ]);
     }
 }

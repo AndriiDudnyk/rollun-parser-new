@@ -41,7 +41,9 @@
     "ext-json": "*",
     "ext-openssl": "*",
     "electrolinux/phpquery": "^0.9.6",
-    "rollun-com/rollun-callback": "dev-master",
+    "fzaninotto/faker": "^1.8",
+    "rollun-com/rollun-parser": "^1.0.3",
+    "rollun-com/rollun-callback": "^5.1.3",
     "rollun-com/rollun-datastore": "^6",
     "rollun-com/rollun-logger": "^4.2",
     "rollun-com/rollun-permission": "^4.0.3",
@@ -69,12 +71,6 @@
       "Parser\\": "src/Parser/src"
     }
   },
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://github.com/AndriiDudnyk/rollun-callback/"
-    }
-  ],
   "autoload-dev": {
     "psr-4": {
       "test\\functional\\": "test/functional"

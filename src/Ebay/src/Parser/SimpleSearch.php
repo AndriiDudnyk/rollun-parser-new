@@ -6,10 +6,10 @@
 
 namespace Ebay\Parser;
 
-use Parser\AbstractParser;
 use phpQuery as PhpQuery;
+use rollun\parser\AbstractParser;
 
-final class Search extends AbstractParser
+final class SimpleSearch extends AbstractParser
 {
     public const PARSER_NAME = self::class;
 
@@ -52,19 +52,11 @@ final class Search extends AbstractParser
             $hotnessText = $pq->find('.s-item__hotness>.NEGATIVE')->text();
             $products[$key]['date'] = $pq->find('.timeleft .tme span')->text();
 
-            if (stristr($hotnessText, 'Watching')) {
-                $products[$key]['watch'] = $hotnessText;
-            }
-
-            if (stristr($hotnessText, 'Sold')) {
-                $products[$key]['sold'] = $hotnessText;
-            }
+            $products[$key]['watch'] = stristr($hotnessText, 'Watch') ? $hotnessText : '';
+            $products[$key]['sold'] = stristr($hotnessText, 'Sold') ? $hotnessText : '';
         }
 
-        $result['products'] = $products;
-        $result['nextPage'] = $document->find('.s-pagination .x-pagination__li--selected + li a')->attr('href');
-
-        return $result;
+        return $products;
     }
 
     public function canParse(string $data): bool
@@ -76,6 +68,33 @@ final class Search extends AbstractParser
 
     protected function saveResult($records)
     {
-        // TODO: Implement saveResult() method.
+        if (!$records) {
+            throw new \InvalidArgumentException("Invalid data after search parsing");
+        }
+
+        foreach ($records as $record) {
+            $product = [
+                'id' => $record['item_id'],
+                'uri' => $record['uri'],
+                'imgs' => json_encode([$record['imgs']]),
+                'price' => $record['price'],
+                'shipping' => $record['shipping'],
+                'seller' => $record['seller'],
+                'watch' => $record['watch'],
+                'sold' => $record['sold'],
+            ];
+
+            if ($this->parseResultDataStore->has($product['id'])) {
+                $this->logger->debug("EBAY-SEARCH (ebay motors). Product exist with id # {$product['id']}", [
+                    'existProduct' => $this->parseResultDataStore->read($product['id']),
+                    'newProduct' => $product
+                ]);
+            }
+
+            $this->parseResultDataStore->create($product, true);
+            $this->logger->debug('EBAY-SEARCH (ebay motors). Create (rewrite) product', [
+                'product' => $product
+            ]);
+        }
     }
 }

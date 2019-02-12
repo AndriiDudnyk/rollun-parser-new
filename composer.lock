@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f001ed07d408a6e2adb11c53673c2ad2",
+    "content-hash": "d8b7303406c75c0619a35ce67c5bc63e",
     "packages": [
         {
             "name": "avz-cmf/zend-psr3-log",
@@ -199,16 +199,16 @@
         },
         {
             "name": "composer/composer",
-            "version": "1.8.3",
+            "version": "1.8.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "a6a3b44581398b7135c7baa0557b7c5b10808b47"
+                "reference": "bc364c2480c17941e2135cfc568fa41794392534"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/a6a3b44581398b7135c7baa0557b7c5b10808b47",
-                "reference": "a6a3b44581398b7135c7baa0557b7c5b10808b47",
+                "url": "https://api.github.com/repos/composer/composer/zipball/bc364c2480c17941e2135cfc568fa41794392534",
+                "reference": "bc364c2480c17941e2135cfc568fa41794392534",
                 "shasum": ""
             },
             "require": {
@@ -275,7 +275,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2019-01-30T07:31:34+00:00"
+            "time": "2019-02-11T09:52:10+00:00"
         },
         {
             "name": "composer/semver",
@@ -724,6 +724,56 @@
             "description": "A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should conform to the current spec.",
             "homepage": "https://github.com/firebase/php-jwt",
             "time": "2017-06-27T22:17:23+00:00"
+        },
+        {
+            "name": "fzaninotto/faker",
+            "version": "v1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fzaninotto/Faker.git",
+                "reference": "f72816b43e74063c8b10357394b6bba8cb1c10de"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/f72816b43e74063c8b10357394b6bba8cb1c10de",
+                "reference": "f72816b43e74063c8b10357394b6bba8cb1c10de",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3.3 || ^7.0"
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "phpunit/phpunit": "^4.8.35 || ^5.7",
+                "squizlabs/php_codesniffer": "^1.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Faker\\": "src/Faker/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "François Zaninotto"
+                }
+            ],
+            "description": "Faker is a PHP library that generates fake data for you.",
+            "keywords": [
+                "data",
+                "faker",
+                "fixtures"
+            ],
+            "time": "2018-07-12T10:23:15+00:00"
         },
         {
             "name": "google/apiclient",
@@ -2095,11 +2145,17 @@
         },
         {
             "name": "rollun-com/rollun-callback",
-            "version": "dev-master",
+            "version": "5.1.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/AndriiDudnyk/rollun-callback/",
-                "reference": "d981be6740cfb7a9b76e10cae7b8284a0fe8a250"
+                "url": "https://github.com/rollun-com/rollun-callback.git",
+                "reference": "456cdeba73705235c6863449edf68bbee9eb5426"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rollun-com/rollun-callback/zipball/456cdeba73705235c6863449edf68bbee9eb5426",
+                "reference": "456cdeba73705235c6863449edf68bbee9eb5426",
+                "shasum": ""
             },
             "require": {
                 "ext-json": "*",
@@ -2132,32 +2188,7 @@
                     "rollun\\callback\\": "src/Callback/src"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "rollun\\test\\unit\\": "test/unit",
-                    "rollun\\test\\functional\\": "test/functional"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit --colors=always"
-                ],
-                "test-coverage": [
-                    "phpunit --colors=always --coverage-clover clover.xml"
-                ],
-                "upload-coverage": [
-                    "coveralls -v"
-                ],
-                "code-sniffer": [
-                    "phpcs ."
-                ],
-                "code-beautiful": [
-                    "phpcbf ."
-                ],
-                "server": [
-                    "php -S 0.0.0.0:8000 -t public public/index.php"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-3.0"
             ],
@@ -2172,7 +2203,7 @@
                 }
             ],
             "description": "Callback",
-            "time": "2019-02-07T16:02:24+00:00"
+            "time": "2019-02-08T15:30:39+00:00"
         },
         {
             "name": "rollun-com/rollun-datastore",
@@ -2246,16 +2277,16 @@
         },
         {
             "name": "rollun-com/rollun-dic",
-            "version": "3.3.4",
+            "version": "3.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rollun-com/rollun-dic.git",
-                "reference": "e6d15af9c415906ea43937d091c5b7f67eebd9a8"
+                "reference": "9e1a927a228fe31f571852f3bf02a62698cec568"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rollun-com/rollun-dic/zipball/e6d15af9c415906ea43937d091c5b7f67eebd9a8",
-                "reference": "e6d15af9c415906ea43937d091c5b7f67eebd9a8",
+                "url": "https://api.github.com/repos/rollun-com/rollun-dic/zipball/9e1a927a228fe31f571852f3bf02a62698cec568",
+                "reference": "9e1a927a228fe31f571852f3bf02a62698cec568",
                 "shasum": ""
             },
             "require": {
@@ -2292,7 +2323,7 @@
                 }
             ],
             "description": "InsideConstruct",
-            "time": "2018-08-29T09:20:07+00:00"
+            "time": "2019-02-11T18:57:38+00:00"
         },
         {
             "name": "rollun-com/rollun-installer",
@@ -2405,6 +2436,49 @@
             ],
             "description": "Zend style Logger",
             "time": "2018-12-12T13:38:25+00:00"
+        },
+        {
+            "name": "rollun-com/rollun-parser",
+            "version": "1.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/rollun-com/rollun-parser.git",
+                "reference": "4f943bae7d0ead051d892c7a4db30e4290f5e014"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/rollun-com/rollun-parser/zipball/4f943bae7d0ead051d892c7a4db30e4290f5e014",
+                "reference": "4f943bae7d0ead051d892c7a4db30e4290f5e014",
+                "shasum": ""
+            },
+            "require": {
+                "electrolinux/phpquery": "^0.9.6",
+                "fzaninotto/faker": "^1.8",
+                "guzzlehttp/guzzle": "^6.3",
+                "php": "^7.2",
+                "rollun-com/rollun-callback": "^5.1",
+                "rollun-com/rollun-datastore": "^6.0",
+                "zendframework/zend-servicemanager": "^3.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7",
+                "rollun-com/rollun-logger": "^4.1",
+                "squizlabs/php_codesniffer": "^3.3",
+                "symfony/dotenv": "^4.1",
+                "zendframework/zend-config-aggregator": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "rollun\\parser\\": "src/Parser/src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Foundation for parsers",
+            "time": "2019-02-12T10:39:12+00:00"
         },
         {
             "name": "rollun-com/rollun-permission",
@@ -4360,16 +4434,16 @@
         },
         {
             "name": "zendframework/zend-expressive-session-ext",
-            "version": "1.4.0",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-expressive-session-ext.git",
-                "reference": "e6ccd35f0164cc92e3645aab4462c250f692cd94"
+                "reference": "75bc1fac322facd9a0410200769ae02cc2d4049c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-expressive-session-ext/zipball/e6ccd35f0164cc92e3645aab4462c250f692cd94",
-                "reference": "e6ccd35f0164cc92e3645aab4462c250f692cd94",
+                "url": "https://api.github.com/repos/zendframework/zend-expressive-session-ext/zipball/75bc1fac322facd9a0410200769ae02cc2d4049c",
+                "reference": "75bc1fac322facd9a0410200769ae02cc2d4049c",
                 "shasum": ""
             },
             "require": {
@@ -4389,8 +4463,8 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.4.x-dev",
-                    "dev-develop": "1.5.x-dev"
+                    "dev-master": "1.5.x-dev",
+                    "dev-develop": "1.6.x-dev"
                 },
                 "zf": {
                     "config-provider": "Zend\\Expressive\\Session\\Ext\\ConfigProvider"
@@ -4415,7 +4489,7 @@
                 "zend-expressive",
                 "zf"
             ],
-            "time": "2019-01-09T14:07:45+00:00"
+            "time": "2019-02-11T22:29:16+00:00"
         },
         {
             "name": "zendframework/zend-expressive-template",
@@ -7142,7 +7216,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "rollun-com/rollun-callback": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": false,

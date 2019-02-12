@@ -6,17 +6,27 @@
 
 namespace Ebay\Parser;
 
-use Parser\AbstractParser;
+use rollun\parser\AbstractParser;
 
 final class Compatible extends AbstractParser
 {
     public const PARSER_NAME = 'ebayCompatible';
 
-    public function parse(string $data): array
+    public function __invoke($data)
     {
-        $data = json_decode($data, true);
+        if (!$this->isValid($data)) {
+            throw new \RuntimeException('Invalid data for parser');
+        }
 
-        $compatibleItems = $data['data'];
+        $document = file_get_contents($data['filepath']);
+        $decodedDocument = json_decode($document, true);
+        [$itemId,] = explode('-', basename($data['filepath']));
+
+        if (!$itemId) {
+            throw new \InvalidArgumentException("Can't parse item id from ebay compatible document");
+        }
+
+        $compatibleItems = $decodedDocument['data'];
         $compatibles = [];
         $result = [];
 
@@ -26,6 +36,7 @@ final class Compatible extends AbstractParser
                 'model' => $compatible['Model'][0] ?? '',
                 'submodel' => $compatible['Submodel'][0] ?? '',
                 'year' => $compatible['Year'][0] ?? '',
+                'item_id' => $itemId,
             ];
         }
 
@@ -33,7 +44,13 @@ final class Compatible extends AbstractParser
         $result['currentPageNo'] = $data['pageInfo']['currentPageNo'] ?? null;
         $result['totalPageCount'] = $data['pageInfo']['totalPageCount'] ?? null;
 
-        return $result;
+        $this->saveResult($result);
+        unlink($data['filepath']);
+    }
+
+    public function parse(string $data): array
+    {
+        // TODO: Implement parse() method.
     }
 
     public function canParse(string $data): bool
@@ -41,8 +58,22 @@ final class Compatible extends AbstractParser
         return boolval(json_decode($data, true) ?? null);
     }
 
-    protected function saveResult($records)
+    protected function saveResult($data)
     {
-        // TODO: Implement saveResult() method.
+        $compatibles = $data['compatibles'];
+
+        foreach ($compatibles as $compatible) {
+            $compatible['id'] = $this->createCompatibleId($compatible);
+            $this->parseResultDataStore->create($compatible, true);
+        }
+    }
+
+    protected function createCompatibleId($record)
+    {
+        return $record['item_id']
+            . '-' . $record['make']
+            . '-' . $record['model']
+            . '-' . $record['submodel']
+            . '-' . $record['year'];
     }
 }

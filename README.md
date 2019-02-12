@@ -1,5 +1,5 @@
 
-# rollun-service-skeleton
+# rollun-parser
 
 `rollun-service-skeleton` - скелет для построения сервисов на базе [zend-expressive](https://docs.zendframework.com/zend-expressive/).
 В `rollun-service-skeleton` изначально подключены такие модули:

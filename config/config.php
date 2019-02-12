@@ -52,7 +52,7 @@ $aggregator = new ConfigAggregator([
 
     // Default App module config
     \Ebay\ConfigProvider::class,
-    \Parser\ConfigProvider::class,
+    \rollun\parser\ConfigProvider::class,
 
     // Default App module config
     // Load application config in a pre-defined order in such a way that local settings
