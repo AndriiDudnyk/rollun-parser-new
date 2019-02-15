@@ -49,3 +49,43 @@
         - HOST - домен сайт где происходит авторизация
         - EMAIL_FROM - от кого отправить email для подтверждения регистрации
         - EMAIL_TO - кому отправить email для подтверждения регистрации
+        
+## Документация по парсингу ebay.com
+
+**Парсеры**:
+- `Ebay\Parser\Compatible` - парсинг совместимый моделей для мотоцыклов
+- `Ebay\Parser\EbayMotorsPaginationSearch` - парсинг пагинации поисковой выдачи и проставка задач для парсинга поисковых
+выдач для всех страниц выдачи (для верстки где родительский тэг на врепере `#SimpleSearch`)
+- `Ebay\Parser\EbayMotorsSearch` - парсинг продуктов из поисковой выдачи (для верстки где родительский тэг на врепере `#SimpleSearch`)
+- `Ebay\Parser\Product` - парсинг страницы продукта
+- `Ebay\Parser\SimpleSearch` - парсинг продуктов из поисковой выдачи (для верстки где родительский тэг на врепере `.s-item__wrapper`)
+
+Все воркер менеджери для загрузки и парсинга запускаються с `/api/webhook/cron`. Первый колбэк, который запускает задачу
+на парсинг пагинации поисковой выдачи можна запустить с `/api/webhook/searchPaginationTask`
+
+**Все колбєки на поставку задачи на парсинг**
+- `/api/webhook/searchPaginationTask` парсинг конктретной пагинации поисковой выдачи
+- `/api/webhook/searchTask`  парсинг конктретной поисковой выдачи (для теста)
+- `/api/webhook/productTask`  парсинг конктретного продукта (для теста)
+- `/api/webhook/compatibleTask`  парсинг конктретного документа моделй совместимости (для теста)
+
+**Очереди которые используються для парсинга и загрузки страниц (это название очередей в клиентах очереди)**
+- `ebaySearchPaginationTaskQueue`
+- `ebaySearchPaginationDocumentQueue`
+- `ebaySearchTaskQueue`
+- `ebaySearchDocumentQueue`
+- `ebayProductTaskQueue`
+- `ebayProductDocumentQueue`
+- `ebayCompatibleTaskQueue`
+- `ebayCompatibleDocumentQueue`
+- `pidQueue`
+
+! Внутренее представление очереди для SQS и файлов могут отличаться
+
+Для того чтобы узнать сколько сообщений в очереди и очистить очереди нужно зделать запрос на соответственные `uri`
+`/queue/messages/{название_очереди}` и `/queue/purge/{название_очереди}`
+
+## Proxy manager
+
+Прокси менеджер уже настроен на внешний datastore, поэтому чтобы его использовать нужно указать переменную окружения
+`PROXY_MANAGER_URI` (пример: PROXY_MANAGER_URI="http://proxy-provider.rollun.net/api/datastore/proxy")
