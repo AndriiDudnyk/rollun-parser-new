@@ -6,6 +6,8 @@
 
 declare(strict_types = 1);
 
+use Ebay\Handler\PurgeQueue;
+use Ebay\Handler\ShowQueueMessages;
 use Psr\Container\ContainerInterface;
 use rollun\callback\Middleware\WebhookMiddleware;
 use rollun\datastore\Middleware\DataStoreApi;
@@ -51,9 +53,14 @@ use Zend\Expressive\Router\Route;
  */
 return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container): void {
     $app->get(
-        '/',
-        App\Handler\HomePageHandler::class,
-        'home-page'
+        '/queue/messages/{queueName}',
+        ShowQueueMessages::class,
+        'show-message-queue'
+    );
+    $app->get(
+        '/queue/purge/{queueName}',
+        PurgeQueue::class,
+        'purge-queue'
     );
 
     $app->get(

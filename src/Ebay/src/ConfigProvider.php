@@ -6,6 +6,10 @@
 
 namespace Ebay;
 
+use Ebay\Handler\PurgeQueue;
+use Ebay\Handler\PurgeQueueFactory;
+use Ebay\Handler\ShowQueueMessages;
+use Ebay\Handler\ShowQueueMessagesFactory;
 use Ebay\Loader\BaseLoader;
 use Ebay\Loader\CompatibleLoader;
 use Ebay\Loader\SearchLoader;
@@ -22,6 +26,7 @@ use rollun\callback\PidKiller\Factory\WorkerManagerAbstractFactory;
 use rollun\callback\PidKiller\WorkerManager;
 use rollun\callback\Queues\Factory\FileAdapterAbstractFactory;
 use rollun\callback\Queues\Factory\QueueClientAbstractFactory;
+use rollun\callback\Queues\Factory\SqsAdapterAbstractFactory;
 use rollun\callback\Queues\QueueClient;
 use rollun\datastore\DataStore\Factory\DataStoreAbstractFactory;
 use rollun\datastore\DataStore\Factory\DbTableAbstractFactory;
@@ -48,10 +53,11 @@ class ConfigProvider
                     EbayMotorsPaginationSearch::class => EbayMotorsPaginationSearch::class,
                 ],
                 'aliases' => [
-                    self::__NAMESPACE__ . 'searchPaginationParser' => EbayMotorsPaginationSearch::class
+                    self::__NAMESPACE__ . 'searchPaginationParser' => EbayMotorsPaginationSearch::class,
                 ],
                 'factories' => [
-
+                    ShowQueueMessages::class => ShowQueueMessagesFactory::class,
+                    PurgeQueue::class => PurgeQueueFactory::class,
                 ],
             ],
             // ----- WORKER MANAGERS ------
@@ -139,12 +145,14 @@ class ConfigProvider
                 self::__NAMESPACE__ . 'searchPaginationLoaderProcess' => [
                     ProcessAbstractFactory::KEY_CLASS => Process::class,
                     ProcessAbstractFactory::KEY_MAX_EXECUTE_TIME => 60,
-                    ProcessAbstractFactory::KEY_CALLBACK_SERVICE => self::__NAMESPACE__ . 'searchPaginationLoaderWorker',
+                    ProcessAbstractFactory::KEY_CALLBACK_SERVICE => self::__NAMESPACE__
+                        . 'searchPaginationLoaderWorker',
                 ],
                 self::__NAMESPACE__ . 'searchPaginationParserProcess' => [
                     ProcessAbstractFactory::KEY_CLASS => Process::class,
                     ProcessAbstractFactory::KEY_MAX_EXECUTE_TIME => 60,
-                    ProcessAbstractFactory::KEY_CALLBACK_SERVICE => self::__NAMESPACE__ . 'searchPaginationParserWorker',
+                    ProcessAbstractFactory::KEY_CALLBACK_SERVICE => self::__NAMESPACE__
+                        . 'searchPaginationParserWorker',
                 ],
 
                 // Ebay product
@@ -282,13 +290,13 @@ class ConfigProvider
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebaySearchTaskQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
                 self::__NAMESPACE__ . 'searchDocumentQueue' => [
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebaySearchDocumentQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
 
                 // Ebay search pagination
@@ -296,13 +304,13 @@ class ConfigProvider
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebaySearchPaginationTaskQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
                 self::__NAMESPACE__ . 'searchPaginationDocumentQueue' => [
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebaySearchPaginationDocumentQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
 
                 // Ebay product
@@ -310,13 +318,13 @@ class ConfigProvider
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebayProductTaskQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
                 self::__NAMESPACE__ . 'productDocumentQueue' => [
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebayProductDocumentQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
 
                 // Ebay product
@@ -324,13 +332,19 @@ class ConfigProvider
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebayCompatibleTaskQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
                 ],
                 self::__NAMESPACE__ . 'compatibleDocumentQueue' => [
                     QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
                     QueueClientAbstractFactory::KEY_DELAY => 0,
                     QueueClientAbstractFactory::KEY_NAME => 'ebayCompatibleDocumentQueue',
-                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'fileAdapter',
+                    QueueClientAbstractFactory::KEY_ADAPTER => self::__NAMESPACE__ . 'sqsAdapter',
+                ],
+
+                'pidKillerQueue' => [
+                    QueueClientAbstractFactory::KEY_CLASS => QueueClient::class,
+                    QueueClientAbstractFactory::KEY_ADAPTER => 'pidQueueAdapter',
+                    QueueClientAbstractFactory::KEY_NAME => 'pidQueue',
                 ],
             ],
             FileAdapterAbstractFactory::class => [
@@ -338,9 +352,29 @@ class ConfigProvider
                     FileAdapterAbstractFactory::KEY_STORAGE_DIR_PATH => '/tmp/test',
                     FileAdapterAbstractFactory::KEY_TIME_IN_FLIGHT => 10,
                 ],
+            ],
+            SqsAdapterAbstractFactory::class => [
+                self::__NAMESPACE__ . 'sqsAdapter' => [
+                    SqsAdapterAbstractFactory::KEY_MAX_RECEIVE_COUNT => 10,
+                    SqsAdapterAbstractFactory::KEY_MAX_RECEIVE_COUNT => 10,
+                    SqsAdapterAbstractFactory::KEY_SQS_ATTRIBUTES => [
+                        'VisibilityTimeout' => 10,
+                    ],
+                    SqsAdapterAbstractFactory::KEY_SQS_CLIENT_CONFIG => [
+                        'key' => getenv('AWS_KEY'),
+                        'secret' => getenv('AWS_SECRET'),
+                        'region' => getenv('AWS_REGION'),
+                    ],
+                ],
                 'pidQueueAdapter' => [
-                    FileAdapterAbstractFactory::KEY_STORAGE_DIR_PATH => '/tmp/test',
-
+                    SqsAdapterAbstractFactory::KEY_MAX_RECEIVE_COUNT => 10,
+                    SqsAdapterAbstractFactory::KEY_MAX_RECEIVE_COUNT => 10,
+                    SqsAdapterAbstractFactory::KEY_SQS_ATTRIBUTES => ['VisibilityTimeout' => 30,],
+                    SqsAdapterAbstractFactory::KEY_SQS_CLIENT_CONFIG => [
+                        'key' => getenv('AWS_KEY'),
+                        'secret' => getenv('AWS_SECRET'),
+                        'region' => getenv('AWS_REGION'),
+                    ],
                 ],
             ],
             TaskSourceAbstractFactory::class => [
@@ -391,7 +425,7 @@ class ConfigProvider
             CallablePluginManagerFactory::KEY_INTERRUPTERS => [
                 'abstract_factories' => [
                     TaskSourceAbstractFactory::class,
-                ]
+                ],
             ],
         ];
     }
